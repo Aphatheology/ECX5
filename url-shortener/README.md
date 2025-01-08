@@ -1,6 +1,6 @@
-# Book CRUD API
+# URL SHORTENER API
 
-Implementaion of CRUD for a Book model
+Implementation of a URL Shortener
 
 ## Built With
 - Node
@@ -11,11 +11,11 @@ Implementaion of CRUD for a Book model
 
 ## Quick Start
 
-Clone the repo:
+Clone the parent repo:
 
 ```bash
-git clone https://github.com/Aphatheology/book-crud-ts.git
-cd book-crud-ts
+git clone https://github.com/Aphatheology/ECX5.git
+cd ECX5/url-shortener
 ```
 
 Install the dependencies:
