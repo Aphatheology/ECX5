@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const createShortUrl = {
   body: Joi.object().keys({
-    longUrl: Joi.string().required(),
+    longUrl: Joi.string().uri().required(),
   }),
 };
 

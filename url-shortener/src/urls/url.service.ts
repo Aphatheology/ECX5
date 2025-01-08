@@ -7,6 +7,20 @@ import { IUser } from 'users/user.model';
 import {nanoid} from "nanoid";
 
 /**
+ * Generate unique short url nanoid
+ * @returns {Promise<String>}
+ */
+const generateUniqueId = async () => {
+  let shortUrl = nanoid(8);
+  let existingShortUrl = await Url.find({shortUrl});
+  while (existingShortUrl) {
+    shortUrl = nanoid(8);
+    existingShortUrl = await Url.find({shortUrl});
+  }
+  return shortUrl;
+}
+
+/**
  * Create a url
  * @param {IUser} user
  * @param {IUrl} urlBody
@@ -19,7 +33,7 @@ export const createShortUrl = async (user: IUser | undefined, urlBody: IUrl): Pr
   //   return existingLongUrl;
   // }
 
-  const shortUrl = nanoid(8);
+  const shortUrl = await generateUniqueId();
   urlBody.createdBy = user?.id;
   urlBody.shortUrl = shortUrl;
   const url = await Url.create(urlBody)
