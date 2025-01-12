@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import userRoute from './users/user.route';
+import jobRoute from 'jobs/job.route';
+import userRoute from 'users/auth.route';
 
 const router = Router();
 
 router.use('/auth', userRoute);
+router.use('/jobs', jobRoute);
 
 router.use('*', (req, res) => {
   res.status(404).send({ message: 'Route Not Found' });

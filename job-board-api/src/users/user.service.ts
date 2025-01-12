@@ -37,7 +37,23 @@ const login = async (userBody: { email: string; password: string }): Promise<{ u
   return { user, token };
 };
 
+/**
+ * Get all jobs for the logged in employer
+ * @param {IUser} user
+ * @returns {Promise<IUser>}
+ */
+const getProfile = async (user: IUser | undefined): Promise<IUser> => {
+  const userProfile = await Users.findOne({ id: user?.id });
+
+  if (!userProfile) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+  
+  return userProfile;
+};
+
 export default {
   register,
   login,
+  getProfile,
 };
