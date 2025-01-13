@@ -8,22 +8,21 @@ const router: Router = express.Router();
 
 router
   .route('/')
-  .post(auth, validate(jobValidation.createJob), jobController.createJob)
+  .post(auth(['employer', 'admin']), validate(jobValidation.createJob), jobController.createJob)
   .get(jobController.getJobs);
 
 router
   .route('/mine')
-  .get(auth, jobController.getMyJobs);
+  .get(auth(['employer', 'admin']), jobController.getMyJobs);
 
 router
   .route('/:jobId')
   .get(validate(jobValidation.getWithId), jobController.getJob)
-  .put(auth, validate(jobValidation.updateJob), jobController.updateJob)
-  .delete(auth, validate(jobValidation.getWithId), jobController.deleteJob);
+  .put(auth(), validate(jobValidation.updateJob), jobController.updateJob)
+  .delete(auth(), validate(jobValidation.getWithId), jobController.deleteJob);
 
   router
   .route('/:jobId/:jobStatus')
-  .patch(auth, validate(jobValidation.updateJobStatus), jobController.updateJobStatus);
-
+  .patch(auth(['employer', 'admin']), validate(jobValidation.updateJobStatus), jobController.updateJobStatus);
 
 export default router;

@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { IUser } from 'users/user.model';
-import ApiError from 'utils/ApiError';
+import ApiError from '../../utils/ApiError';
 import Applicant, { IApplicant } from './applicant.model';
 
 
@@ -10,16 +10,16 @@ import Applicant, { IApplicant } from './applicant.model';
  * @param {Partial<IApplicant>} applicantDto 
  * @returns {Promise<IApplicant>} 
  */
-export const updateApplicantProfile = async (user: IUser | undefined, applicantDto: string): Promise<IApplicant> => {
-  const applicant = await Applicant.findOne({ userId: user?.id });
+export const updateApplicantProfile = async (user: IUser | undefined, applicantDto: Partial<IApplicant>): Promise<IApplicant> => {
+  const applicant = await Applicant.findOne({ user: user?.id });
 
   if (!applicant) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Applicant Profile not found");
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to update Applicant profile, contact Admin');
   }
-  
+
   const updatedApplicant = await Applicant.findByIdAndUpdate(
     applicant.id,
-    { $set: {applicantDto}},
+    { $set: { ...applicantDto } },
     { new: true, runValidators: true }
   );
 

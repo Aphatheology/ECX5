@@ -4,6 +4,8 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 import dotenv from "dotenv";
+import Applicant from '../users/applicants/applicant.model';
+import Employer from '../users/employers/employer.model';
 
 dotenv.config();
 
@@ -12,6 +14,7 @@ export interface IUser extends Document {
   password: string;
   username: string;
   role: RolesEnum;
+  otherId?: string;
   createJWT: () => string;
   comparePassword: (candidatePassword: string, userPassword: string) => Promise<boolean>;
 }
@@ -55,11 +58,25 @@ userSchema.pre<IUser>("save", async function (next) {
   next();
 });
 
-userSchema.methods.createJWT = function (): string {
+userSchema.methods.createJWT = async function (): Promise<string> {
+  let otherId = null;
+  if (this.role === "applicant") {
+    const applicant = await Applicant.findOne({ user: this._id });
+    if (applicant) {
+      otherId = applicant.id;
+    }
+  } else if (this.role === "employer") {
+    const employer = await Employer.findOne({ user: this._id });
+    if (employer) {
+      otherId = employer.id;
+    }
+  }
+
   const payload = {
     id: this._id,
     email: this.email,
     role: this.role,
+    otherId: otherId,
     iat: moment().unix(),
     exp: moment().add(config.jwt.expireInMinute, "minutes").unix(),
   };

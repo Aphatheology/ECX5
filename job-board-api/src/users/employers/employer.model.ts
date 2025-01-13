@@ -1,7 +1,7 @@
 import mongoose, { Model, Schema, Types, Document } from 'mongoose';
 
 export interface IEmployer extends Document {
-  userId: Types.ObjectId;
+  user: Types.ObjectId;
   companyName?: string;
   companyWebsite?: string;
   createdAt: Date;
@@ -10,7 +10,7 @@ export interface IEmployer extends Document {
 
 const EmployerSchema = new Schema<IEmployer>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     companyName: { type: String },
     companyWebsite: { type: String },
   },

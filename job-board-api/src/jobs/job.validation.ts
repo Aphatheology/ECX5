@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { objectId } from 'utils/custom.validation';
+import { objectId } from '..//utils/custom.validation';
 import { JobStatus, JobTypeEnum } from './job.model';
 
 export const createJob = {
@@ -8,8 +8,7 @@ export const createJob = {
     description: Joi.string().min(10).max(1000).required(),
     location: Joi.string().min(2).max(100).required(),
     salary: Joi.number().positive().optional(),
-    jobType: Joi.string().valid(JobTypeEnum.CONTRACT, JobTypeEnum.FREELANCE, JobTypeEnum.FULL_TIME, JobTypeEnum.CONTRACT).required(),
-    employerId: Joi.string().required().custom(objectId),
+    type: Joi.string().valid(JobTypeEnum.CONTRACT, JobTypeEnum.FREELANCE, JobTypeEnum.FULL_TIME, JobTypeEnum.PART_TIME).required(),
   }),
 };
 

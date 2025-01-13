@@ -1,11 +1,13 @@
 import Joi from 'joi';
 import { password } from '../utils/custom.validation';
+import { RolesEnum } from './user.model';
 
 export const register = {
   body: Joi.object({
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
     username: Joi.string().required(),
+    role: Joi.string().valid(RolesEnum.APPLICANT, RolesEnum.EMPLOYER).optional(),
   }),
 };
 

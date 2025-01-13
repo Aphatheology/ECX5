@@ -6,7 +6,7 @@ interface IResume {
 }
 
 export interface IApplicant extends Document {
-  userId: Types.ObjectId;
+  user: Types.ObjectId;
   headline?: string;
   resumes: IResume[];
   createdAt: Date;
@@ -36,7 +36,7 @@ const ResumeSchema = new Schema<IResume>(
 
 const ApplicantSchema = new Schema<IApplicant>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     headline: { type: String},
     resumes: [ResumeSchema],
   },

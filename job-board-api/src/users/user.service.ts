@@ -1,7 +1,8 @@
-import { HydratedDocument } from 'mongoose';
 import ApiError from "../utils/ApiError";
-import Users, { IUser } from "./user.model";
+import Users, { IUser, RolesEnum } from "./user.model";
 import { StatusCodes } from 'http-status-codes';
+import Employer from './employers/employer.model';
+import Applicant from './applicants/applicant.model';
 
 const isEmailTaken = async (email: string): Promise<boolean> => {
   const user = await Users.findOne({ email });
@@ -14,7 +15,15 @@ const register = async (userBody: Record<string, any>): Promise<{ user: IUser; t
   }
 
   const user = await Users.create(userBody);
-  const token = user.createJWT();
+  const role = userBody?.role;
+
+  role === RolesEnum.EMPLOYER
+    ? await Employer.create({ user: user.id })
+    : role === RolesEnum.APPLICANT
+      ? await Applicant.create({ user: user })
+      : null;
+
+  const token = await user.createJWT();
   return { user, token };
 };
 
@@ -32,7 +41,7 @@ const login = async (userBody: { email: string; password: string }): Promise<{ u
       "Incorrect email or password"
     );
   }
-  const token = user.createJWT();
+  const token = await user.createJWT();
 
   return { user, token };
 };
@@ -43,12 +52,12 @@ const login = async (userBody: { email: string; password: string }): Promise<{ u
  * @returns {Promise<IUser>}
  */
 const getProfile = async (user: IUser | undefined): Promise<IUser> => {
-  const userProfile = await Users.findOne({ id: user?.id });
+  const userProfile = await Users.findOne({ _id: user?.id });
 
   if (!userProfile) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
-  
+
   return userProfile;
 };
 

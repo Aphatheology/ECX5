@@ -5,8 +5,8 @@ export interface CreateJobDto {
   description: string;
   location: string;
   salary?: number;
-  jobType: JobTypeEnum;
-  employerId: string;
+  type: JobTypeEnum;
+  employer: string;
 }
 
 export type UpdateJobDto = Partial<CreateJobDto>;

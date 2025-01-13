@@ -3,7 +3,8 @@ import Jobs, { IJob, JobStatus } from './job.model';
 import ApiError from '../utils/ApiError';
 import { CreateJobDto, UpdateJobDto } from './job.dto';
 import { StatusCodes } from 'http-status-codes';
-import { IUser } from 'users/user.model';
+import { IUser } from '../users/user.model';
+import Employer from '../users/employers/employer.model';
 
 /**
  * Create a job
@@ -12,7 +13,12 @@ import { IUser } from 'users/user.model';
  * @returns {Promise<IJob>}
  */
 export const createJob = async (user: IUser | undefined, jobDto: CreateJobDto): Promise<IJob> => {
-  jobDto.employerId = user?.id;
+  const employer = await Employer.findOne({ user: user?.id });
+  if (!employer || !employer?.companyName) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Create your Employer profile first');
+  }
+
+  jobDto.employer = employer.id;
   const job = await Jobs.create(jobDto)
   return job;
 };
@@ -23,7 +29,7 @@ export const createJob = async (user: IUser | undefined, jobDto: CreateJobDto): 
  * @returns {Promise<IJob[]>}
  */
 export const getMyJobs = async (user: IUser | undefined): Promise<IJob[]> => {
-  const jobs = await Jobs.find({ employer: user?.id });
+  const jobs = await Jobs.find({ employer: user?.otherId });
   return jobs;
 };
 
@@ -58,7 +64,7 @@ export const getJob = async (jobId: string): Promise<IJob> => {
  * @returns {Promise<void>}
  */
 export const updateJob = async (user: IUser | undefined, jobId: string, jobDto: UpdateJobDto): Promise<IJob> => {
-  const job = await Jobs.findOne({ id: jobId, employer: user?.id });
+  const job = await Jobs.findOne({ id: jobId, employer: user?.otherId });
 
   if (!job) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
@@ -66,7 +72,7 @@ export const updateJob = async (user: IUser | undefined, jobId: string, jobDto: 
 
   const updatedJob = await Jobs.findByIdAndUpdate(
     job.id,
-    { $set: jobDto },
+    { $set: { ...jobDto } },
     { new: true, runValidators: true }
   );
 
@@ -85,12 +91,12 @@ export const updateJob = async (user: IUser | undefined, jobId: string, jobDto: 
  * @returns {Promise<IJob>} 
  */
 export const updateJobStatus = async (user: IUser | undefined, jobId: string, status: string): Promise<IJob> => {
-  const job = await Jobs.findOne({ id: jobId, employer: user?.id });
+  const job = await Jobs.findOne({ id: jobId, employer: user?.otherId });
 
   if (!job) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
   }
-  
+
   const updatedJob = await Jobs.findByIdAndUpdate(
     jobId,
     { status },
@@ -111,7 +117,7 @@ export const updateJobStatus = async (user: IUser | undefined, jobId: string, st
  * @returns {Promise<void>}
  */
 export const deleteJob = async (user: IUser | undefined, jobId: string): Promise<void> => {
-  const job = await Jobs.findOne({ id: jobId, employer: user?.id });
+  const job = await Jobs.findOne({ id: jobId, employer: user?.otherId });
 
   if (!job) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");

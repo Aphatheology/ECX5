@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
   token?: string
 }
 
-const auth = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+const auth = (roles?: string[]) => async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   let token: string | undefined;
 
   if (
@@ -23,14 +23,19 @@ const auth = async (req: CustomRequest, res: Response, next: NextFunction): Prom
     if (!token) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, "Please authenticate");
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, otherId: string };
 
     const user = await User.findById(decoded.id);
 
     if (!user) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, "Please authenticate");
     }
+
+    if (roles && roles.length > 0 && !roles.includes(user.role)) {
+      throw new ApiError(StatusCodes.FORBIDDEN, "Access denied");
+    }
+
+    user.otherId = decoded.otherId;
 
     req.user = user;
     next();
