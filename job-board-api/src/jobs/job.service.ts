@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
-import Jobs, { IJob, JobStatus } from './job.model';
+import Jobs, { IJob } from './job.model';
 import ApiError from '../utils/ApiError';
 import { CreateJobDto, UpdateJobDto } from './job.dto';
 import { StatusCodes } from 'http-status-codes';
 import { IUser } from '../users/user.model';
 import Employer from '../users/employers/employer.model';
+import { Pagination } from '../utils/pagination';
 
 /**
  * Create a job
@@ -37,9 +37,15 @@ export const getMyJobs = async (user: IUser | undefined): Promise<IJob[]> => {
  * Get all active jobs
  * @returns {Promise<IJob[]>}
  */
-export const getJobs = async (): Promise<IJob[]> => {
-  const jobs = await Jobs.find();
-  return jobs;
+export const getJobs = async (query: Record<string, any>): Promise<{ items: IJob[]; page: number; totalPages: number; totalItems: number; hasNextPage: boolean }> => {
+  let {page, limit, ...filter} = query;
+
+  const modifiedFilter = Jobs.buildFilter(filter);
+
+  const pipeline = Pagination<IJob>(page, limit, modifiedFilter);
+  const jobs = await Jobs.aggregate(pipeline);
+
+  return jobs[0] || { items: [], page: 1, totalPages: 0, totalItems: 0, hasNextPage: false };
 };
 
 /**

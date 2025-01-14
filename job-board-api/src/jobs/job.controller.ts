@@ -15,7 +15,7 @@ export const getMyJobs = catchAsync(async (req: CustomRequest, res: Response) =>
 });
 
 export const getJobs = catchAsync(async (req: Request, res: Response) => {
-  const result = await jobService.getJobs();
+  const result = await jobService.getJobs(req.query);
   res.send(result);
 });
 
