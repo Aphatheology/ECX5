@@ -2,7 +2,7 @@ import ApiError from "../utils/ApiError";
 import Users, { IUser, RolesEnum } from "./user.model";
 import { StatusCodes } from 'http-status-codes';
 import Employer from './employers/employer.model';
-import Applicant from './applicants/applicant.model';
+import { Applicant } from './applicants/applicant.model';
 
 const isEmailTaken = async (email: string): Promise<boolean> => {
   const user = await Users.findOne({ email });

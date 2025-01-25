@@ -4,7 +4,7 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 import dotenv from "dotenv";
-import Applicant from '../users/applicants/applicant.model';
+import { Applicant } from '../users/applicants/applicant.model';
 import Employer from '../users/employers/employer.model';
 
 dotenv.config();
