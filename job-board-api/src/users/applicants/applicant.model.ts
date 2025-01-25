@@ -1,6 +1,7 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 
-interface IResume {
+export interface IResume {
+  user: Types.ObjectId;
   url: string;
   publicId: string;
   tag: string;
@@ -17,18 +18,10 @@ export interface IApplicant extends Document {
 
 const ResumeSchema = new Schema<IResume>(
   {
-    url: {
-      type: String,
-      required: true,
-    },
-    publicId: {
-      type: String,
-      required: true,
-    },
-    tag: {
-      type: String,
-      required: true,
-    },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    url: { type: String, required: true },
+    publicId: { type: String, required: true },
+    tag: { type: String, required: true },
   },
   { timestamps: true }
 );
@@ -36,7 +29,7 @@ const ResumeSchema = new Schema<IResume>(
 const ApplicantSchema = new Schema<IApplicant>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    headline: { type: String},
+    headline: { type: String },
     resumes: [{ type: Schema.Types.ObjectId, ref: 'Resume' }]
   },
   { timestamps: true }

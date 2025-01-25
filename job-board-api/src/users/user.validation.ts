@@ -35,6 +35,15 @@ export const updateApplicantProfile = {
 
 export const deleteResume = {
   params: Joi.object({
-    publicId: Joi.string().required(),
+    id: Joi.string().required(),
+  }),
+};
+
+export const updateResumeTag = {
+  body: Joi.object({
+    tag: Joi.string().required(),
+  }),
+  params: Joi.object({
+    id: Joi.string().required(),
   }),
 };

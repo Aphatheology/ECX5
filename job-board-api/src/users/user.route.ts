@@ -19,14 +19,17 @@ router
 
 router
   .route("/applicant")
+  .get(auth(['applicant']), applicantController.getApplicantProfile)
   .patch(auth(['applicant']), validate(userValidation.updateApplicantProfile), applicantController.updateApplicantProfile);
 
 router
   .route("/applicant/resume")
+  .get(auth(['applicant']), applicantController.getApplicantResumes)
   .post(auth(['applicant']), resumeUpload.single('resume'), applicantController.uploadResume)
 
 router
-  .route("/applicant/:publicId")
+  .route("/applicant/resume/:id")
+  .patch(auth(['applicant']), validate(userValidation.updateResumeTag), applicantController.updateResumeTag)
   .delete(auth(['applicant']), validate(userValidation.deleteResume), applicantController.deleteResume)
 
 export default router;
