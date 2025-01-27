@@ -47,60 +47,46 @@ export const applyForJob = async (user: any, jobId: string, resumeId: string) =>
  * @param user
  * @param jobId
  */
-export const getJobApplications = async (user: any, jobId: string, query: Record<string, any>): Promise<IApplication[]> => {
+export const getJobApplications = async (user: any, jobId: string, query: Record<string, any>): Promise<{ items: IApplication[]; page: number; totalPages: number; totalItems: number; hasNextPage: boolean }> => {
   const job = await Jobs.findOne({ _id: jobId, employer: user.otherId });
   if (!job) {
     throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to view applications for this job');
   }
 
-  // Promise<{ items: IApplication[]; page: number; totalPages: number; totalItems: number; hasNextPage: boolean }> 
-  // const applications = await Applications.find({ job: job.id })
-  //   .populate([{
-  //     path: 'resume',
-  //     select: 'url',
-  //   }, {
-  //     path: 'applicant',
-  //     select: 'headline',
-  //   }]);
-
-  let {page, limit, ...filter} = query;
+  const {page, limit, ...filter} = query;
   const modifiedFilter = Applications.buildFilter(filter);
   const pipeline = Pagination<IApplication>(page, limit, modifiedFilter);
-  // pipeline.splice(1, 0, {
-  //   $lookup: {
-  //     from: 'resumes', 
-  //     localField: 'resume', 
-  //     foreignField: '_id', 
-  //     as: 'resumeDetails', 
-  //   },
-  // });
+  console.log(pipeline)
+  pipeline.splice(1, 0, {
+    $lookup: {
+      from: 'resumes', 
+      localField: 'resume', 
+      foreignField: '_id', 
+      as: 'resume', 
+    },
+  });
   
-  // pipeline.splice(2, 0, {
-  //   $unwind: {
-  //     path: '$resumeDetails',
-  //     preserveNullAndEmptyArrays: true, 
-  //   },
-  // });
+  pipeline.splice(2, 0, {
+    $unwind: {
+      path: '$resume',
+      preserveNullAndEmptyArrays: true, 
+    },
+  });
   
-  // pipeline.splice(3, 0, {
-  //   $project: {
-  //     _id: 1,
-  //     job: 1,
-  //     applicant: 1,
-  //     status: 1,
-  //     'resumeDetails.url': 1, 
-  //   },
-  // });
-  // const applications = await Applications.aggregate(pipeline);
-  
+  pipeline.splice(3, 0, {
+    $project: {
+      _id: 1,
+      job: 1,
+      status: 1,
+      'resume.url': 1, 
+      createdAt: 1,
+      updatedAt: 1
+    },
+  });
 
-  const applications = await Applications.find({ job: job.id })
-    .populate({
-      path: 'resume',
-      select: 'url',
-    });
+  const applications = await Applications.aggregate(pipeline);
 
-  return applications;
+  return applications[0] || { items: [], page: 1, totalPages: 0, totalItems: 0, hasNextPage: false };
 };
 
 /**
