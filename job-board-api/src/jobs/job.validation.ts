@@ -10,10 +10,10 @@ export const createJob = {
     description: Joi.string().min(50).required(),
     location: Joi.string().required(),
     salary: Joi.number().positive().optional(),
-    salaryCurrency: Joi.string().valid(SalaryCurrency.EUR, SalaryCurrency.GBP, SalaryCurrency.NGN, SalaryCurrency.USD).optional(),
-    salaryPer: Joi.string().valid(SalaryPer.HOUR, SalaryPer.WEEK, SalaryPer.MONTH, SalaryPer.YEAR).optional(),
-    workFrom: Joi.string().valid(WorkFrom.ONSITE, WorkFrom.HYBRID, WorkFrom.REMOTE).required(),
-    type: Joi.string().valid(JobTypeEnum.CONTRACT, JobTypeEnum.FREELANCE, JobTypeEnum.FULL_TIME, JobTypeEnum.PART_TIME).required(),
+    salaryCurrency: Joi.string().valid(...Object.values(SalaryCurrency)).optional(),
+    salaryPer: Joi.string().valid(...Object.values(SalaryPer)).optional(),
+    workFrom: Joi.string().valid(...Object.values(WorkFrom)).required(),
+    type: Joi.string().valid(...Object.values(JobTypeEnum)).required(),
   }),
 };
 
@@ -32,17 +32,10 @@ export const updateJob = {
       description: Joi.string().min(50).optional(),
       location: Joi.string().optional(),
       salary: Joi.number().positive().optional(),
-      salaryCurrency: Joi.string().valid(SalaryCurrency.EUR, SalaryCurrency.GBP, SalaryCurrency.NGN, SalaryCurrency.USD).optional(),
-      salaryPer: Joi.string().valid(SalaryPer.HOUR, SalaryPer.WEEK, SalaryPer.MONTH, SalaryPer.YEAR).optional(),
-      workFrom: Joi.string().valid(WorkFrom.ONSITE, WorkFrom.HYBRID, WorkFrom.REMOTE).optional(),
-      jobType: Joi.string()
-        .valid(
-          JobTypeEnum.CONTRACT,
-          JobTypeEnum.FREELANCE,
-          JobTypeEnum.FULL_TIME,
-          JobTypeEnum.CONTRACT
-        )
-        .optional(),
+      salaryCurrency: Joi.string().valid(...Object.values(SalaryCurrency)).optional(),
+      salaryPer: Joi.string().valid(...Object.values(SalaryPer)).optional(),
+      workFrom: Joi.string().valid(...Object.values(WorkFrom)).optional(),
+      jobType: Joi.string().valid(...Object.values(JobTypeEnum)).optional(),
     })
     .or(
       "title",
@@ -64,6 +57,6 @@ export const updateJob = {
 export const updateJobStatus = {
   params: Joi.object().keys({
     jobId: Joi.string().required(),
-    JobStatus: Joi.string().required().valid(JobStatus.ACTIVE, JobStatus.INACTIVE, JobStatus.APPROVED, JobStatus.DISAPPROVED),
+    JobStatus: Joi.string().required().valid(...Object.values(JobStatus)),
   }),
 };
