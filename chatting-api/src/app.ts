@@ -3,9 +3,16 @@ import config from './config/config';
 import morgan from './config/morgan';
 import { errorConverter, errorHandler } from './utils/error';
 import router from './router';
-
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3000',  // Replace with your frontend URL
+  credentials: true,  // Allow cookies and authorization headers
+}));
+
+app.options('*', cors());
 
 if (config.env !== "test") {
   app.use(morgan.successHandler);
