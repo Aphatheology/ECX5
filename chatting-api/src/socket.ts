@@ -17,6 +17,7 @@ const socketHandler = (io: Server) => {
     socket.on("join_chat", (chatId) => {
       try {
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
+          console.log(chatId)
           throw new Error('Invalid chat ID format');
         }
         

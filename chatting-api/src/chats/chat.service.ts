@@ -16,6 +16,12 @@ export const createChat = async (userId: string, otherUserId: string, isGroup = 
   return chat;
 };
 
+export const getChats = async () => {
+  const chat = await Chat.find();
+  
+  return chat;
+};
+
 export const sendMessage = async (userId: string, chatId: string, content: string) => {
   const message = await Message.create({
     sender: userId,

@@ -7,7 +7,7 @@ const router = Router();
 
 router.use('/auth', authRoute);
 router.use('/users', userRoute);
-router.use("/chat", chatRoute);
+router.use("/chats", chatRoute);
 
 router.use('*', (req, res) => {
   res.status(404).send({ message: 'Route Not Found' });

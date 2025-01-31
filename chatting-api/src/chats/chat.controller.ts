@@ -9,6 +9,11 @@ export const createChat = catchAsync(async (req: CustomRequest, res: Response) =
   res.status(201).json(chat);
 });
 
+export const getChats = catchAsync(async (req: CustomRequest, res: Response) => {
+  const chats = await chatService.getChats();
+  res.status(201).json(chats);
+});
+
 export const sendMessage = catchAsync(async (req: CustomRequest, res: Response) => {
   const { chatId, content } = req.body;
   const message = await chatService.sendMessage(req.user?.id, chatId, content);
