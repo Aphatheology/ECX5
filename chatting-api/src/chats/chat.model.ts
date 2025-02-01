@@ -1,11 +1,14 @@
 import mongoose, { Schema } from 'mongoose';
+import { MsgTypeEnum } from './message.model';
 
 export interface IChat extends Document {
   members: string[];
   isGroup: boolean;
-  name?: string;
+  name: string;
   lastMessage?: string;
-  admin?: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ChatSchema: Schema = new Schema(
@@ -14,8 +17,8 @@ const ChatSchema: Schema = new Schema(
     isGroup: { type: Boolean, default: false },
     name: { type: String },
     lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+    lastMessageType: { type: String, enum: MsgTypeEnum },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

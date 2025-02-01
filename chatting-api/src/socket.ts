@@ -1,9 +1,25 @@
 import { Server, Socket } from "socket.io";
 import * as ChatService from './chats/chat.service';
 import mongoose from 'mongoose';
+import { sendMessage } from './chats/chat.validation';
+import Joi from 'joi';
+import { MsgTypeEnum } from './chats/message.model';
+import { objectId } from './utils/custom.validation';
 
-const getErrorMessage = (error: unknown) => 
+const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'An unknown error occurred';
+
+const sendMessageSchema = Joi.object({
+  chatId: Joi.string().required().custom(objectId),
+  content: Joi.string().optional().allow(''),
+  typeOfMsg: Joi.string().valid(...Object.values(MsgTypeEnum)).required(),
+  fileURL: Joi.string().when('typeOfMsg', {
+    is: Joi.string().valid('text'),
+    then: Joi.optional().allow(''), 
+    otherwise: Joi.required().not(''),
+  }),
+  fileSize: Joi.number().optional(),
+});
 
 const socketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
@@ -20,7 +36,7 @@ const socketHandler = (io: Server) => {
           console.log(chatId)
           throw new Error('Invalid chat ID format');
         }
-        
+
         socket.join(chatId);
         console.log(`User joined chat: ${chatId}`);
       } catch (error) {
@@ -30,23 +46,22 @@ const socketHandler = (io: Server) => {
       }
     });
 
-    socket.on("message", async (message) => {
+    socket.on('leave room', (roomId) => {
+      socket.leave(roomId);
+      console.log(`User ${socket.id} left room ${roomId}`);
+    });
+
+    socket.on("message", async (userId, message) => {
       try {
-        console.log('Received message:', message);
-        
-        if (!mongoose.Types.ObjectId.isValid(message.chatId)) {
-          throw new Error('Invalid chat ID format');
-        }
-        if (!mongoose.Types.ObjectId.isValid(message.sender)) {
-          throw new Error('Invalid sender ID format');
+        console.log(message);
+        const { error } = sendMessage.body.validate(message); 
+
+        if (error) {
+          throw new Error(error.details[0].message); 
         }
 
-        const newMessage = await ChatService.sendMessage(
-          message.sender,
-          message.chatId,
-          message.content
-        );
-        
+        const newMessage = await ChatService.sendMessage(userId, message);
+
         io.to(message.chatId).emit("receive_message", newMessage);
       } catch (error) {
         console.error('Message handling error:', error);

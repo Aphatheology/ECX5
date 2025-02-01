@@ -57,6 +57,18 @@ export const getProfile = async (user: IUser | undefined): Promise<IUser> => {
   return userProfile;
 };
 
+export const getWithUsername = async (username: string): Promise<Partial<IUser>> => {
+  const userProfile = await Users.findOne({ 
+    username: { $regex: new RegExp(`^${username}$`, "i") } 
+  });
+  
+  if (!userProfile) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  return {username, _id: userProfile._id};
+};
+
 export const refreshToken = async (token: string): Promise<{ accessToken: string; refreshToken: string }> => {
   const decoded = jwt.verify(token, config.jwt.refreshSecret) as { id: string };
   const user = await Users.findById(decoded.id);
@@ -65,8 +77,8 @@ export const refreshToken = async (token: string): Promise<{ accessToken: string
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid refresh token");
   }
 
-  const newAccessToken = user.createJWT();
-  const newRefreshToken = user.createRefreshToken();
+  const newAccessToken = await user.createJWT();
+  const newRefreshToken = await user.createRefreshToken();
 
   user.refreshToken = newRefreshToken;
   await user.save();

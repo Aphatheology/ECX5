@@ -19,6 +19,11 @@ export const getProfile = catchAsync(async (req: CustomRequest, res: Response): 
     res.status(StatusCodes.OK).send(user);
 });
 
+export const getWithUsername = catchAsync(async (req: CustomRequest, res: Response): Promise<any> => {
+  const user = await userService.getWithUsername(req.params.username);
+  res.status(StatusCodes.OK).send(user);
+});
+
 export const refreshAccessToken = catchAsync(async (req: Request, res: Response): Promise<void> => {
   const tokens = await userService.refreshToken(req.body.token);
   res.status(StatusCodes.OK).send(tokens);

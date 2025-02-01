@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
   accessToken?: string
 }
 
-const auth = (roles?: string[]) => async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+const auth = (roles?: string[]) => async (req: CustomRequest, res: Response, next: NextFunction): Promise<any> => {
   let token: string | undefined;
 
   if (
@@ -38,6 +38,13 @@ const auth = (roles?: string[]) => async (req: CustomRequest, res: Response, nex
     req.user = user;
     next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      // throw ApiError(StatusCodes.UNAUTHORIZED, "jwt expired");
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: "jwt expired" });
+    }
+    // if (error instanceof jwt.JsonWebTokenError) {
+    //   throw ApiError(StatusCodes.UNAUTHORIZED, "Invalid token");
+    // }
     next(error);
   }
 };

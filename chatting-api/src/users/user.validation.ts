@@ -21,3 +21,10 @@ export const refreshToken = {
     token: Joi.string().required(),
   }),
 };
+
+export const getWithUsername = {
+  params: Joi.object({
+    username: Joi.string().required(),
+  }),
+};
+

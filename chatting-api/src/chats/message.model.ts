@@ -23,7 +23,7 @@ const MessageSchema: Schema = new Schema(
     content: { type: String, required: true },
     chatId: { type: mongoose.Schema.Types.ObjectId, ref: "Chat", required: true },
     readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    typeOfMsg: { type: String, enum: MsgTypeEnum },
+    typeOfMsg: { type: String, enum: MsgTypeEnum, required: true },
     fileURL: { type: String },
     fileSize: { type: Number }
   },

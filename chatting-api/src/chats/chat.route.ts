@@ -1,15 +1,30 @@
 import express, { Router } from "express";
 import auth from '../middlewares/auth';
 import * as chatController from './chat.controller';
-// import * as chatValidation from "./chat.validation";
-
+import * as chatValidation from "./chat.validation";
+import validate from '../middlewares/validate';
 
 const router: Router = express.Router();
 
-router.post("/", auth(), chatController.createChat);
-router.get("/", auth(), chatController.getChats);
-router.post("/send", auth(), chatController.sendMessage);
-router.get("/:chatId/messages", auth(), chatController.getMessages);
-router.post("/mark-as-read", auth(), chatController.markAsRead);
+router
+  .route("/")
+  .post(auth(), validate(chatValidation.createChat), chatController.createChat)
+  .get(auth(), chatController.getChats);
+
+router
+  .route("/send")
+  .post(auth(), validate(chatValidation.sendMessage), chatController.sendMessage);
+
+router
+  .route("/:chatId")
+  .get(auth(), validate(chatValidation.getWithId), chatController.getChat);
+
+router
+  .route("/:chatId/messages")
+  .get(auth(), validate(chatValidation.getWithId), chatController.getMessages);
+
+router
+  .route("/mark-as-read")
+  .post(auth(), chatController.markAsRead);
 
 export default router;
