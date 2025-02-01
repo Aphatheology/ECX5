@@ -6,8 +6,6 @@ import moment from "moment";
 const Message: React.FC<{ message: any }> = ({ message }) => {
   const avatarUrl = `https://ui-avatars.com/api/?name=${message.sender.username.toUpperCase()}&background=random`;
 
-  console.log(avatarUrl);
-
   return (
     <div className="flex items-start mb-6">
       <div className="flex-shrink-0 mr-4">

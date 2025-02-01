@@ -19,7 +19,8 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    console.log(error.response)
+    if (error.response?.status === 401 && error.response?.data.message === 'jwt expired') {
       try {
         const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {token: localStorage.getItem('refreshToken')}, { withCredentials: true });
         localStorage.setItem('accessToken', data.accessToken);

@@ -24,8 +24,7 @@ const AuthPage = ({ params }: { params: Promise<{ test: string }> }) => {
             console.log(data);
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
-            localStorage.setItem('user', data.user);
-            localStorage.setItem('username', data.user.username);
+            localStorage.setItem('user', JSON.stringify(data.user));
             router.push('/');
         } catch (error) {
             console.error('Authentication failed', error);

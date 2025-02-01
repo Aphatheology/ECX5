@@ -1,41 +1,30 @@
 import { User } from '@/app/page';
-import API from '@/global/apiClient';
 import socketClient from "@/global/socketClient";
 import React, { useState, useEffect } from "react";
 import { IoSend } from "react-icons/io5";
 
-const MessageInput: React.FC<{ roomId: string }> = ({ roomId }) => {
+const MessageInput: React.FC<{ chatId: string }> = ({ chatId }) => {
   const [text, setText] = useState("");
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data } = await API.get("/users/");
-        setUser(data);
-      } catch (error) {
-        console.error("Failed to fetch user", error);
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      if (!storedUser) {
+        window.location.replace("/auth/login");
+      } else {
+        setUser(storedUser);
       }
-    };
-    fetchUser();
-  }, []);
-
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     const storedUsername = localStorage.getItem("user").toJSON();
-  //     setUser(storedUsername.username);
-  //   }
-  // }, []);
+    }, []);
 
   const handleSendMessage = () => {
     if (text && user) {
-      socketClient.emit("message", {
-        chatId: roomId,
-        sender: user._id,
-        username: user.username,
+      socketClient.emit("message", user._id, {
+        chatId: chatId,
         content: text,
+        typeOfMsg: "text"
       });
       setText("");
+      socketClient.emit("stop_typing", chatId, user?.username); 
     }
   };
 
@@ -46,6 +35,12 @@ const MessageInput: React.FC<{ roomId: string }> = ({ roomId }) => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+
+    socketClient.emit("typing", chatId, user?.username); 
+};
+
   return (
     <div className="py-4 px-6 bg-gray-700 flex">
       <input
@@ -53,7 +48,7 @@ const MessageInput: React.FC<{ roomId: string }> = ({ roomId }) => {
         className="flex-1 py-2 px-4 rounded bg-gray-600 text-white"
         placeholder="Type your message..."
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
       />
       <button
