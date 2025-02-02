@@ -1,10 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import Message from '@/components/Message';
 import MessageInput from '@/components/MessageInput';
 import TopBar from '@/components/TopBar';
 import apiClient from '@/global/apiClient';
 import socketClient from '@/global/socketClient';
+import { IChat } from '@/interfaces/chat';
+import { IMessage } from '@/interfaces/message';
+import { IUser } from '@/interfaces/user';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -12,10 +14,29 @@ import { toast } from 'sonner';
 const ChatRoom: React.FC = () => {
     const router = useRouter();
     const { chatId } = useParams<{ chatId: string }>();
-    const [messages, setMessages] = useState<any[]>([]);
-    const [chat, setChat] = useState<any>({});
+    const [messages, setMessages] = useState<IMessage[]>([]);
+    const [chat, setChat] = useState<IChat>({
+        _id: '',
+        members: [],
+        isGroup: false,
+        name: '',
+        createdBy: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    });
     const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+    const [user, setUser] = useState<IUser | null>(null);
     const fetchedRef = useRef(false); // Prevent multiple fetches
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!storedUser) {
+            window.location.replace('/auth/login');
+        } else {
+            setUser(storedUser);
+        }
+    }, []);
 
     useEffect(() => {
         if (!chatId || fetchedRef.current) return;
@@ -48,20 +69,26 @@ const ChatRoom: React.FC = () => {
     }, [chatId]);
 
     useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        if (!chatId) return;
+        socketClient.connect();
         socketClient.emit('join_chat', chatId);
 
         socketClient.on('receive_message', (message) => {
-            console.log(message);
             setMessages((prevMessages) => [...prevMessages, message]);
         });
 
         socketClient.on('error', (message) => {
-            console.log(message);
-            toast.error(message);
+            toast.error(message + ' from on error');
         });
 
         socketClient.on('user_typing', (username) => {
-            setTypingUsers((prev) => new Set(prev).add(username));
+            setTypingUsers((prev) => new Set([...prev, username]));
         });
 
         socketClient.on('user_stopped_typing', (username) => {
@@ -70,29 +97,38 @@ const ChatRoom: React.FC = () => {
                 newSet.delete(username);
                 return newSet;
             });
-            // }
+        });
+
+        socketClient.on('user_left', (socketId) => {
+            console.log(`User ${socketId} left the chat`);
+            // toast.info(`A user has left the chat`);
+        });
+
+        socketClient.on('disconnect', () => {
+            toast.info('Disconnected from chat');
         });
 
         return () => {
+            if (socketClient.connected) {
+                socketClient.disconnect();
+            }
             socketClient.off('receive_message');
             socketClient.off('user_typing');
+            socketClient.off('user_stopped_typing');
+            socketClient.off('user_disconnected');
+            socketClient.off('disconnect');
         };
     }, [chatId]);
 
     const handleLogout = () => {
-        // localStorage.removeItem('accessToken');
-        // localStorage.removeItem('refreshToken');
-        // localStorage.removeItem('user');
-        // router.push('/auth/login');
-        // toast.success('User logged out');
-
-        socketClient.emit('leave room', chatId);
+        socketClient.emit('stop_typing', chatId, user?.username);
+        socketClient.emit('leave_chat', chatId);
         router.push('/');
     };
 
     return (
         <div className='flex flex-col h-screen bg-gray-800 text-white'>
-            <TopBar roomName={chat?.name || 'Chat'} onLogout={handleLogout} />
+            <TopBar chat={chat} onLogout={handleLogout} />
             <div className='flex-1 overflow-auto p-4'>
                 {messages.map((msg, index) => (
                     <Message key={index} message={msg} />
@@ -114,6 +150,7 @@ const ChatRoom: React.FC = () => {
                         })()}
                     </div>
                 )}
+                <div ref={messagesEndRef} />
             </div>
             <MessageInput chatId={chatId} />
         </div>

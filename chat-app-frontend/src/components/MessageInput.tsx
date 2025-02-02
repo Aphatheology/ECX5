@@ -1,11 +1,11 @@
-import { User } from '@/app/page';
 import socketClient from "@/global/socketClient";
+import { IUser } from '@/interfaces/user';
 import React, { useState, useEffect } from "react";
 import { IoSend } from "react-icons/io5";
 
 const MessageInput: React.FC<{ chatId: string }> = ({ chatId }) => {
   const [text, setText] = useState("");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
