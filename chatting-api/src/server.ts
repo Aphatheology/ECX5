@@ -1,4 +1,3 @@
-require('dotenv').config();
 import { createServer } from "http";
 import { Server } from "socket.io";
 import mongoose from 'mongoose';
@@ -15,19 +14,13 @@ const startServer = async () => {
 
     const io = new Server(httpServer, {
       cors: {
-        origin: "http://localhost:3000",
+        origin: config.frontendUrl,
         methods: ["GET", "POST"],
         credentials: true,
       },
     });
 
-    console.log("Socket.io server initialized"); 
-
     socketHandler(io);
-
-    // const server = app.listen(config.port, () => {
-    //   logger.info(`Db connected and app listening on port ${config.port}`);
-    // });
 
     httpServer.listen(config.port, () => {
       logger.info(`Db connected and server listening on port ${config.port}`);

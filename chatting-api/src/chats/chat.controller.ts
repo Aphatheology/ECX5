@@ -15,7 +15,7 @@ export const getChats = catchAsync(async (req: CustomRequest, res: Response) => 
 });
 
 export const getChat = catchAsync(async (req: CustomRequest, res: Response) => {
-  const chat = await chatService.getChat(req.params.chatId);
+  const chat = await chatService.getChat(req.user?.id, req.params.chatId);
   res.status(StatusCodes.OK).send(chat);
 });
 

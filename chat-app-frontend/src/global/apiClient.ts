@@ -1,9 +1,8 @@
-// utils/api.ts - Axios setup for authentication handling
 import axios from 'axios';
 
 const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true, // Send cookies for refresh token handling
+  withCredentials: true,
 });
 
 // Attach access token to requests

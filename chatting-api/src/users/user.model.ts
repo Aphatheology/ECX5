@@ -51,8 +51,23 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform: function (doc, ret) {
+        delete ret.password;
+        delete ret.refreshToken;
+        return ret;
+      },
+    },
   }
 );
+
+userSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    delete ret.password;
+    delete ret.refreshToken;
+    return ret;
+  },
+});
 
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();

@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 interface EnvVars {
   NODE_ENV: string;
   PORT: string;
+  FRONTEND_URL: string;
   MONGODB_URL: string;
   JWT_SECRET: string;
   JWT_REFRESH_SECRET: string;
@@ -20,6 +21,7 @@ interface EnvVars {
 const envVarsSchema = Joi.object<EnvVars>({
   NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
   PORT: Joi.string().default('4000'),
+  FRONTEND_URL: Joi.string().uri().default('http://localhost:3000'),
   MONGODB_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
@@ -39,6 +41,7 @@ if (error) {
 const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  frontendUrl: envVars.FRONTEND_URL,
   jwt: {
     secret: envVars.JWT_SECRET,
     expireInMinute: envVars.JWT_EXPIRE_IN_MINUTE,

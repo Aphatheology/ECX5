@@ -8,8 +8,8 @@ import cors from 'cors';
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:3000',  // Replace with your frontend URL
-  credentials: true,  // Allow cookies and authorization headers
+  origin: config.frontendUrl,  
+  credentials: true,
 }));
 
 app.options('*', cors());

@@ -1,24 +1,29 @@
 import { IUser } from '../users/user.model';
 import ApiError from '../utils/ApiError';
-import { CreateChatDto, SendMessageDto, SendMessageResponse } from './chat.interface';
+import { CreateChatDto, SendMessageDto } from './chat.interface';
 import Chat, { IChat } from './chat.model';
-import Message, { IMessage, MsgTypeEnum } from './message.model';
+import Message, { IMessage } from './message.model';
 import { StatusCodes } from 'http-status-codes';
-import { ObjectId, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 
 export const createChat = async (createChatDto: CreateChatDto): Promise<IChat> => {
-  let chat = await Chat.findOne({ members: { $all: [...createChatDto.members] } });
+  const memberIds = createChatDto.members.map(user => new Types.ObjectId(user)); 
+
+  let chat = await Chat.findOne({
+    members: { $all: memberIds, $size: memberIds.length }
+  }).populate('members', '_id username');
 
   if (!chat) {
-    chat = await Chat.create({...createChatDto, members: createChatDto.members.map(user => new Types.ObjectId(user))});
+    chat = await Chat.create({ ...createChatDto, members: memberIds });
+    await chat.populate('members', '_id username');
   }
 
   return chat;
 };
 
-export const getChat = async (chatId: string): Promise<IChat> => {
-  let chat = await Chat.findOne({ _id: chatId });
+export const getChat = async (userId: string, chatId: string): Promise<IChat> => {
+  let chat = await Chat.findOne({ _id: chatId, members: userId }).populate('members', '_id username').exec();
 
   if (!chat) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Chat not found")
@@ -28,7 +33,7 @@ export const getChat = async (chatId: string): Promise<IChat> => {
 };
 
 export const getChats = async (user: IUser | undefined): Promise<IChat[]> => {
-  const chat = await Chat.find({members: user?.id});
+  const chat = await Chat.find({ members: user?.id }).populate('members', '_id username').exec();
 
   return chat;
 };
@@ -42,11 +47,11 @@ export const sendMessage = async (
   let messageData: Partial<IMessage> = {
     sender: userId,
     chatId,
-    content: content || '', 
+    content: content || '',
     readBy: [userId],
     typeOfMsg,
     fileURL: fileURL || undefined,
-    fileSize: fileSize || undefined 
+    fileSize: fileSize || undefined
   };
 
   const message = await Message.create(messageData);

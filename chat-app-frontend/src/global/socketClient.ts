@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const socketClient: Socket = io("http://localhost:3300", {
+const socketClient: Socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
   withCredentials: true,
   autoConnect: false,
   reconnection: true,

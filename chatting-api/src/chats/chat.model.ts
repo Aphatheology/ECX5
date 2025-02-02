@@ -6,6 +6,7 @@ export interface IChat extends Document {
   isGroup: boolean;
   name: string;
   lastMessage?: string;
+  lastMessageType?: MsgTypeEnum;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
