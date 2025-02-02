@@ -18,7 +18,8 @@
   "scripts": {
     "test": "ts-node ./dist/server.ts",
     "dev": "cross-env NODE_ENV=development tsc-watch --onSuccess \"node ./dist/server.js\"",
-    "prod": "cross-env NODE_ENV=production tsc && node ./dist/server.js"
+    "prod": "cross-env NODE_ENV=production tsc && node ./dist/server.js",
+    "start": "cross-env NODE_ENV=production node ./dist/server.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
