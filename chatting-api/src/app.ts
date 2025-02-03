@@ -23,7 +23,7 @@ app.use(express.json());
 app.use('/api', router);
 
 app.get("/v1", (req, res) => {
-  res.send({ message: "Welcome to my Express TS Template" });
+  res.send({ message: "Welcome to Aphatheology Chatting API" });
 });
 
 app.use("*", (req, res) => {
