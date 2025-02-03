@@ -17,16 +17,18 @@ const ChatSelectionPage: React.FC = () => {
     const [selectedUsers, setSelectedUsers] = useState<IUser[]>([]);
     const [isGroup, setIsGroup] = useState(false);
     const [groupName, setGroupName] = useState('');
+    const [loading, setLoading] = useState(true);
     const history = useRouter();
 
     useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (!storedUser) {
-            window.location.replace('/auth/login');
-        } else {
-            setUser(storedUser);
-        }
-    }, []);
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      if (!storedUser) {
+        history.replace('/auth/login');
+      } else {
+          setUser(storedUser);
+          setLoading(false); 
+      }
+  }, []);
 
     useEffect(() => {
         if (user) {
@@ -140,6 +142,8 @@ const ChatSelectionPage: React.FC = () => {
             toast.error('Failed to create chat');
         }
     };
+
+    if (loading) return null;
 
     return (
         <div className='flex flex-col items-center justify-center h-screen bg-gray-800 text-white'>

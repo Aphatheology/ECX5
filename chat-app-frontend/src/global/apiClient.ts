@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -18,7 +19,7 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log(error.response)
+    toast.error(error?.message)
     if (error.response?.status === 401 && error.response?.data.message === 'jwt expired') {
       try {
         const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {token: localStorage.getItem('refreshToken')}, { withCredentials: true });
