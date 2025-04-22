@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { MsgTypeEnum } from './message.model';
 
 export interface IChat extends Document {
-  members: string[];
+  members: (string | { _id: string; username: string })[];
   isGroup: boolean;
   name: string;
   lastMessage?: string;

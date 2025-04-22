@@ -6,14 +6,19 @@ import logger from './config/logger';
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : 'An unknown error occurred';
 
-const userSockets = new Map<string, string>(); // <socketId, username>
+const userSockets = new Map<string, string>();
+const onlineUsers = new Set<string>(); 
 
 const socketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     logger.info(`User connected: ${socket.id}`);
 
     socket.on("authenticate", (username: string) => {
+      console.log(username)
       userSockets.set(socket.id, username);
+      onlineUsers.add(username);
+      io.emit("user_online", username);
+      io.emit("online_users", Array.from(onlineUsers));
     });
 
     socket.on("error", (error) => {
@@ -21,11 +26,14 @@ const socketHandler = (io: Server) => {
       socket.emit('error', 'Socket connection error');
     });
 
-    socket.on("join_chat", (chatId) => {
+    socket.on("join_chat", async (chatId) => {
       try {
-
         socket.join(chatId);
         logger.info(`User joined chat: ${chatId}`);
+        
+        const chatMembers = await ChatService.getChatMembers(chatId);
+        const onlineChatMembers = chatMembers.filter(member => onlineUsers.has(member.username));
+        io.to(chatId).emit("chat_online_users", { chatId, onlineUsers: onlineChatMembers });
       } catch (error) {
         logger.error('Join chat error:', error);
         socket.emit('error', getErrorMessage(error));
@@ -53,7 +61,7 @@ const socketHandler = (io: Server) => {
 
     socket.on("typing", (chatId, username) => {
       try {
-        socket.to(chatId).emit("user_typing", username);
+        socket.to(chatId).emit("user_typing", { chatId, username });
       } catch (error) {
         logger.error("Typing indicator error:", error);
         socket.emit("error", getErrorMessage(error));
@@ -62,24 +70,34 @@ const socketHandler = (io: Server) => {
 
     socket.on("stop_typing", (chatId, username) => {
       try {
-        socket.to(chatId).emit("user_stopped_typing", username);
+        socket.to(chatId).emit("user_stopped_typing", { chatId, username });
       } catch (error) {
         logger.error("Stop typing error:", error);
         socket.emit("error", getErrorMessage(error));
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       try {
         logger.info("User disconnected:", socket.id);
         
+        const username = userSockets.get(socket.id);
+        if (username) {
+          onlineUsers.delete(username);
+          io.emit("user_offline", username);
+          io.emit("online_users", Array.from(onlineUsers));
+        }
+
         const rooms = Array.from(socket.rooms);
-        logger.info(rooms);
-        rooms.forEach((room) => {
+        rooms.forEach(async (room) => {
           if (room !== socket.id) {
             socket.to(room).emit("user_left", socket.id); 
             socket.leave(room);
             logger.info(`User ${socket.id} left room ${room}`);
+            
+            const chatMembers = await ChatService.getChatMembers(room);
+            const onlineChatMembers = chatMembers.filter(member => onlineUsers.has(member.username));
+            io.to(room).emit("chat_online_users", { chatId: room, onlineUsers: onlineChatMembers });
           }
         });
     
@@ -89,7 +107,6 @@ const socketHandler = (io: Server) => {
         logger.error("Disconnect handling error:", error);
       }
     });
-    
   });
 };
 

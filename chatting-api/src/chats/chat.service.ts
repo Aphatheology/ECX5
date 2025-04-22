@@ -38,6 +38,16 @@ export const getChats = async (user: IUser | undefined): Promise<IChat[]> => {
   return chat;
 };
 
+export const getChatMembers = async (chatId: string): Promise<{ _id: string; username: string }[]> => {
+  const chat = await Chat.findById({ _id: chatId }).populate('members', '_id username').exec();
+
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Chat not found")
+  }
+
+  return chat.members as { _id: string; username: string }[];
+};
+
 export const sendMessage = async (
   userId: string,
   sendMessageDTO: SendMessageDto
