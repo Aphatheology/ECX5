@@ -19,10 +19,12 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    toast.error(error?.message)
+    if (error.response?.data.message) toast.error(error.response?.data.message)
+    else toast.error(error?.message)
+
     if (error.response?.status === 401 && error.response?.data.message === 'jwt expired') {
       try {
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {token: localStorage.getItem('refreshToken')}, { withCredentials: true });
+        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { token: localStorage.getItem('refreshToken') }, { withCredentials: true });
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         error.config.headers.Authorization = `Bearer ${data.accessToken}`;
