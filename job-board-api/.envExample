@@ -1,6 +1,6 @@
 MONGODB_URL=YourMongoDbURL
 NODE_ENV=developmentOrproduction
-PORT=YourPortDefaultIs4000`
+PORT=YourPortDefaultIs4000
 JWT_SECRET=JWTSecret
 JWT_EXPIRE_IN_MINUTE=JWT_SECRET_IN_MINUTE
 CLOUDINARY_NAME=your Cloud Name
