@@ -12,11 +12,13 @@ import {nanoid} from "nanoid";
  */
 const generateUniqueId = async () => {
   let shortUrl = nanoid(8);
-  let existingShortUrl = await Url.find({shortUrl});
+  let existingShortUrl = await Url.findOne({ shortUrl });
+
   while (existingShortUrl) {
     shortUrl = nanoid(8);
-    existingShortUrl = await Url.find({shortUrl});
+    existingShortUrl = await Url.findOne({ shortUrl });
   }
+
   return shortUrl;
 }
 
